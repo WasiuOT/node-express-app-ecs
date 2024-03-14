@@ -1,6 +1,6 @@
-# variable "REGION" {
-#     default = "us-east-1"  
-# }
+variable "REGION" {
+    default = "us-east-1"  
+}
 
 variable "AMIS" {
     type = map
