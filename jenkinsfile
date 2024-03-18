@@ -1,0 +1,103 @@
+pipeline {
+    agent any
+    tools {
+    terraform 'Terraform'
+    }
+    environment {
+            ecr_registry = '381491819482.dkr.ecr.us-east-1.amazonaws.com/nodeapp'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', credentialsId: 'gitlab_username', url: 'https://gitlab.com/wasiuot1/nodejs-test.git'
+            }
+        }
+
+        stage('Terraform Init and Validate') {
+            steps {
+            withAWS(credentials: 'aws_creds') {
+                dir('Terraform_files') {
+                    sh '''
+                        terraform init
+                        terraform validate
+                    '''
+                    }
+                }   
+            }
+        }
+        stage('Terraform plan') {
+            steps {
+            withAWS(credentials: 'aws_creds') {
+                dir('Terraform_files') {
+                    sh '''
+                        terraform plan
+                    '''
+                    }
+                }   
+            }
+        }
+        stage('Terraform apply') {
+            steps {
+            withAWS(credentials: 'aws_creds') {
+                dir('Terraform_files') {
+                    sh '''
+                        terraform apply --auto-approve
+                    '''
+                    }
+                }   
+            }
+        }
+
+        stage('Generate .env file') {
+            steps {
+                dir('..') {
+                    script {
+                        def rdsEndpointWithQuotes = sh(
+                            script: "terraform output -raw rds_endpoint",
+                            returnStdout: true
+                        ).trim()
+
+                        def rdsEndpoint = rdsEndpointWithQuotes.replaceAll('"', '')
+
+                        def envContent = """
+                            DATABASE_URL=postgresql://postgres:postgres@${rdsEndpoint}:5432/default?schema=public
+                            JWT_SECRET=Abc12345
+                            NODE_ENV=production
+                        """
+
+                        writeFile(file: '.env', text: envContent.trim())
+                    }
+                }
+            }
+        }
+
+        stage('Docker Image Build') {
+            steps {
+                script {
+                    dockerImage = docker.build ecr_registry
+                    }
+                }
+        }
+        stage('Docker Image Scan'){
+            steps {
+                script {
+                    sh 'docker images'
+                }
+            }
+        }
+        stage('Docker Image Push'){
+            steps {
+             withAWS(credentials: 'aws_creds') {
+                script {
+                    sh '''
+                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 381491819482.dkr.ecr.us-east-1.amazonaws.com
+                    docker push 381491819482.dkr.ecr.us-east-1.amazonaws.com/nodeapp:latest
+                    '''
+                }
+             }
+            }
+        }
+        }
+    }
+
