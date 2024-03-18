@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', credentialsId: 'WasiuOT', url: 'git@github.com:WasiuOT/node-express-app-ecs.git'
+                git branch: 'main', credentialsId: 'WasiuOT', url: 'https://github.com/WasiuOT/node-express-app-ecs.git'
             }
         }
 
