@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', credentialsId: 'gitlab_username', url: 'https://gitlab.com/wasiuot1/nodejs-test.git'
+                git branch: 'main', credentialsId: 'WasiuOT', url: 'git@github.com:WasiuOT/node-express-app-ecs.git'
             }
         }
 
