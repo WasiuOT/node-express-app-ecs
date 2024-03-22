@@ -56,7 +56,7 @@ pipeline {
                         def rdsEndpoint = rdsEndpointWithQuotes.replaceAll('"', '')
 
                         def envContent = """
-                            DATABASE_URL=postgresql://postgres:postgres@${rdsEndpoint}:5432/postgres?schema=public
+                            DATABASE_URL=postgresql://postgres:postgres@${rdsEndpoint}:5432/default?schema=public
                             JWT_SECRET=${rds_pass}
                             NODE_ENV=production
                         """
