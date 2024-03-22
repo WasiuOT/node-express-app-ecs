@@ -5,7 +5,7 @@ pipeline {
     }
     environment {
             ecr_registry = '381491819482.dkr.ecr.us-east-1.amazonaws.com/nodeapp'
-            rds_pass = credentials('JWT_Secret')
+            rds_pass = credentials('JWT_SECRET')
     }
 
     stages {
