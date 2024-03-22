@@ -14,11 +14,14 @@ RUN npx prisma generate
 
 RUN npx prisma migrate deploy
 
-RUN npx prisma db seed
-
 
 EXPOSE 3000
 
+RUN npx nx serve api
+
+RUN npx prisma db seed
+
+
 # Command to start the application
 # CMD [ "npm", "run", "start" ]
-CMD ["npx","nx","serve","api"]
+CMD ["npm", "ci", "&&", "npx", "prisma", "migrate", "deploy", "&&", "node", "dist/api/main.js"]
