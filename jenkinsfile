@@ -9,12 +9,6 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'main', credentialsId: 'gitlab_username', url: 'https://gitlab.com/wasiuot1/nodejs-test.git'
-            }
-        }
-
         stage('Terraform Init and Validate') {
             steps {
             withAWS(credentials: 'aws_creds') {
