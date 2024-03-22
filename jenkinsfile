@@ -98,6 +98,22 @@ pipeline {
              }
             }
         }
+        stage('Manual Approval') {
+            steps {
+                input message: 'Destroy Resources', submitter: 'WasiuOT'
+            }
+        }
+        stage('Terraform Destroy') {
+            steps {
+            withAWS(credentials: 'aws_creds') {
+                dir('Terraform_files') {
+                    sh '''
+                        terraform destroy --auto-approve
+                    '''
+                    }
+                }   
+            }
         }
     }
+}
 
