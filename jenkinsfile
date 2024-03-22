@@ -44,28 +44,28 @@ pipeline {
             }
         }
 
-        // stage('Generate .env file') {
-        //     steps {
-        //         dir('..') {
-        //             script {
-        //                 def rdsEndpointWithQuotes = sh(
-        //                     script: "terraform output -raw rds_endpoint",
-        //                     returnStdout: true
-        //                 ).trim()
+        stage('Generate .env file') {
+            steps {
+                dir('..') {
+                    script {
+                        def rdsEndpointWithQuotes = sh(
+                            script: "terraform output -raw rds_endpoint",
+                            returnStdout: true
+                        ).trim()
 
-        //                 def rdsEndpoint = rdsEndpointWithQuotes.replaceAll('"', '')
+                        def rdsEndpoint = rdsEndpointWithQuotes.replaceAll('"', '')
 
-        //                 def envContent = """
-        //                     DATABASE_URL=postgresql://postgres:postgres@${rdsEndpoint}:5432/postgres?schema=public
-        //                     JWT_SECRET=${rds_pass}
-        //                     NODE_ENV=production
-        //                 """
+                        def envContent = """
+                            DATABASE_URL=postgresql://postgres:postgres@${rdsEndpoint}:5432/postgres?schema=public
+                            JWT_SECRET=${rds_pass}
+                            NODE_ENV=production
+                        """
 
-        //                 writeFile(file: '.env', text: envContent.trim())
-        //             }
-        //         }
-        //     }
-        // }
+                        writeFile(file: '.env', text: envContent.trim())
+                    }
+                }
+            }
+        }
 
         stage('Docker Image Build') {
             steps {
