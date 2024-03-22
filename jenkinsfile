@@ -72,6 +72,17 @@ pipeline {
                 }
             }
         }
+        stage('Update DB schema') {
+            steps {
+                script {
+                    sh '''
+                    npx prisma generate
+                    npx prisma migrate deploy
+                    npx prisma db seed
+                    '''
+                }
+            }
+        }
 
         stage('Docker Image Build') {
             steps {
@@ -97,6 +108,17 @@ pipeline {
                     '''
                 }
              }
+            }
+        }
+        stage('Deploy latest Image') {
+            steps {
+                withAWS(credentials: 'aws_creds') {
+                    dir('Terraform_files') {
+                        sh '''
+                            terraform apply -auto-approve -target=aws_ecs_task_definition.node_app_task
+                        '''
+                        }
+                    }   
             }
         }
         stage('Manual Approval') {
