@@ -69,7 +69,7 @@ pipeline {
         // }
         stage('Generate .env file') {
             steps {
-                dir('Terraform_Files') { // Corrected directory name
+                dir('Terraform_files') { // Corrected directory name
                     script {
                         def rdsEndpointWithQuotes = sh(
                             script: "terraform output -raw rds_endpoint",
