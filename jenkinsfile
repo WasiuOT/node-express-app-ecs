@@ -5,15 +5,10 @@ pipeline {
     }
     environment {
             ecr_registry = '381491819482.dkr.ecr.us-east-1.amazonaws.com/nodeapp'
+            rds_pass = credentials('JWT_SECRET')
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'main', credentialsId: 'gitlab_username', url: 'https://gitlab.com/wasiuot1/nodejs-test.git'
-            }
-        }
-
         stage('Terraform Init and Validate') {
             steps {
             withAWS(credentials: 'aws_creds') {
@@ -62,7 +57,7 @@ pipeline {
 
                         def envContent = """
                             DATABASE_URL=postgresql://postgres:postgres@${rdsEndpoint}:5432/default?schema=public
-                            JWT_SECRET=Abc12345
+                            JWT_SECRET=${rds_pass}
                             NODE_ENV=production
                         """
 
@@ -98,6 +93,33 @@ pipeline {
              }
             }
         }
+        stage('Deploy latest Image') {
+            steps {
+                withAWS(credentials: 'aws_creds') {
+                    dir('Terraform_files') {
+                        sh '''
+                            terraform apply -auto-approve -target=aws_ecs_task_definition.node_app_task
+                        '''
+                        }
+                    }   
+            }
+        }
+        stage('Manual Approval') {
+            steps {
+                input message: 'Destroy Resources', submitter: 'WasiuOT'
+            }
+        }
+        stage('Terraform Destroy') {
+            steps {
+            withAWS(credentials: 'aws_creds') {
+                dir('Terraform_files') {
+                    sh '''
+                        terraform destroy --auto-approve
+                    '''
+                    }
+                }   
+            }
         }
     }
+}
 

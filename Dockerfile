@@ -12,6 +12,11 @@ RUN npm install
 
 RUN npx prisma generate
 
+RUN npx prisma migrate deploy
+
+RUN npx prisma db seed
+
+
 EXPOSE 3000
 
 # Command to start the application
