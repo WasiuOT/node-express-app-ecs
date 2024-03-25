@@ -68,6 +68,7 @@ pipeline {
         // }
         stage('Generate .env file') {
             steps {
+                dir('..'){
                 script {
                     def rdsEndpointWithQuotes = sh(
                         script: 'terraform output -raw rds_endpoint',
@@ -84,6 +85,7 @@ pipeline {
 
                     writeFile file: '.env', text: envContent.trim()
                 }
+            }
             }
         }
         stage('Docker Image Build') {
