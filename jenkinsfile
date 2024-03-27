@@ -67,65 +67,65 @@ pipeline {
         //         }
         //     }
         // }
-        stage('Generate .env file') {
-            steps {
-                dir('Terraform_files') { // Corrected directory name
-                    script {
-                        def rdsEndpointWithQuotes = sh(
-                            script: 'terraform output -raw rds_endpoint',
-                            returnStdout: true
-                        ).trim()
+//         stage('Generate .env file') {
+//             steps {
+//                 dir('Terraform_files') { // Corrected directory name
+//                     script {
+//                         def rdsEndpointWithQuotes = sh(
+//                             script: 'terraform output -raw rds_endpoint',
+//                             returnStdout: true
+//                         ).trim()
 
-                        def rdsEndpoint = rdsEndpointWithQuotes.replaceAll('"', '')
+//                         def rdsEndpoint = rdsEndpointWithQuotes.replaceAll('"', '')
 
-                        def envContent = """
-                            DATABASE_URL=postgresql://postgres:postgres@${rdsEndpoint}:5432/default?schema=public
-                            JWT_SECRET=${rds_pass}
-                            NODE_ENV=production
-                        """
+//                         def envContent = """
+//                             DATABASE_URL=postgresql://postgres:postgres@${rdsEndpoint}:5432/default?schema=public
+//                             JWT_SECRET=${rds_pass}
+//                             NODE_ENV=production
+//                         """
 
-                        writeFile file: '../.env', text: envContent.trim() // Write .env file to parent directory
-                    }
-                }
-            }
-}
-        stage('Docker Image Build') {
-            steps {
-                script {
-                    dockerImage = docker.build ecr_registry
-                    }
-                }
-        }
-        stage('Docker Image Scan'){
-            steps {
-                script {
-                    sh 'docker images'
-                }
-            }
-        }
-        stage('Docker Image Push'){
-            steps {
-             withAWS(credentials: 'aws_creds') {
-                script {
-                    sh '''
-                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 381491819482.dkr.ecr.us-east-1.amazonaws.com
-                    docker push 381491819482.dkr.ecr.us-east-1.amazonaws.com/nodeapp:latest
-                    '''
-                }
-             }
-            }
-        }
-        stage('Deploy latest Image') {
-            steps {
-                withAWS(credentials: 'aws_creds') {
-                    dir('Terraform_files') {
-                        sh '''
-                            terraform apply -auto-approve -target=aws_ecs_task_definition.node_app_task
-                        '''
-                        }
-                    }   
-            }
-        }
+//                         writeFile file: '../.env', text: envContent.trim() // Write .env file to parent directory
+//                     }
+//                 }
+//             }
+// }
+//         stage('Docker Image Build') {
+//             steps {
+//                 script {
+//                     dockerImage = docker.build ecr_registry
+//                     }
+//                 }
+//         }
+//         stage('Docker Image Scan'){
+//             steps {
+//                 script {
+//                     sh 'docker images'
+//                 }
+//             }
+//         }
+//         stage('Docker Image Push'){
+//             steps {
+//              withAWS(credentials: 'aws_creds') {
+//                 script {
+//                     sh '''
+//                     aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 381491819482.dkr.ecr.us-east-1.amazonaws.com
+//                     docker push 381491819482.dkr.ecr.us-east-1.amazonaws.com/nodeapp:latest
+//                     '''
+//                 }
+//              }
+//             }
+//         }
+//         stage('Deploy latest Image') {
+//             steps {
+//                 withAWS(credentials: 'aws_creds') {
+//                     dir('Terraform_files') {
+//                         sh '''
+//                             terraform apply -auto-approve -target=aws_ecs_task_definition.node_app_task
+//                         '''
+//                         }
+//                     }   
+//             }
+//         }
         stage('Manual Approval') {
             steps {
                 input message: 'Destroy Resources', submitter: 'WasiuOT'
