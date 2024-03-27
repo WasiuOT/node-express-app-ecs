@@ -38,18 +38,41 @@ pipeline {
                 dir('Terraform_files') {
                     sh '''
                         terraform apply --auto-approve
+                        terraform output -raw rds_endpoint
                     '''
                     }
                 }   
             }
         }
 
+        // stage('Generate .env file') {
+        //     steps {
+        //         dir('..') {
+        //             script {
+        //                 def rdsEndpointWithQuotes = sh(
+        //                     script: "terraform output -raw rds_endpoint",
+        //                     returnStdout: true
+        //                 ).trim()
+
+        //                 def rdsEndpoint = rdsEndpointWithQuotes.replaceAll('"', '')
+
+        //                 def envContent = """
+        //                     DATABASE_URL=postgresql://postgres:postgres@${rdsEndpoint}:5432/default?schema=public
+        //                     JWT_SECRET=${rds_pass}
+        //                     NODE_ENV=production
+        //                 """
+
+        //                 writeFile(file: '.env', text: envContent.trim())
+        //             }
+        //         }
+        //     }
+        // }
         stage('Generate .env file') {
             steps {
-                dir('..') {
+                dir('Terraform_files') { // Corrected directory name
                     script {
                         def rdsEndpointWithQuotes = sh(
-                            script: "terraform output -raw rds_endpoint",
+                            script: 'terraform output -raw rds_endpoint',
                             returnStdout: true
                         ).trim()
 
@@ -61,12 +84,11 @@ pipeline {
                             NODE_ENV=production
                         """
 
-                        writeFile(file: '.env', text: envContent.trim())
+                        writeFile file: '../.env', text: envContent.trim() // Write .env file to parent directory
                     }
                 }
             }
-        }
-
+}
         stage('Docker Image Build') {
             steps {
                 script {
