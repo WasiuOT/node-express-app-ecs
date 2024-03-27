@@ -1,7 +1,7 @@
 resource "aws_s3_bucket" "backend_s3" {
   bucket = "remote-backend-terraform-wasiu"
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
   versioning {
     enabled = true
